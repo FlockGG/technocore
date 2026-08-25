@@ -1,26 +1,212 @@
 @import "tailwindcss";
 
+/* ---------------------------------------------------------------------------
+   Folester design tokens.
+   Pure monochrome: #000 surfaces, #fff text, greys derived only from white at
+   alpha. No hue anywhere — the scale is achromatic by construction, so nothing
+   can drift back toward a tint.
+--------------------------------------------------------------------------- */
+
+@theme {
+  --color-ink-950: #000000;
+  --color-ink-900: #050505;
+  --color-ink-870: #0a0a0a;
+  --color-ink-850: #0d0d0d;
+  --color-ink-800: #121212;
+  --color-ink-750: #1a1a1a;
+  --color-ink-700: #262626;
+
+  --color-chalk: #ffffff;
+  --color-chalk-dim: #a3a3a3;
+  --color-chalk-faint: #737373;
+  --color-chalk-ghost: #4d4d4d;
+
+  /* The accent is a muted blue, matching the network scene's palette so the
+     interface and the visualisation read as one surface. */
+  --color-agent-500: #5b9bd5;
+  --color-agent-400: #8fc2f0;
+  --color-agent-600: #3d7ab0;
+  --color-agent-900: #5b9bd51a;
+
+  /* Severity needs its own channel now that the accent is blue: a warning and an
+     error must not read as "active". Muted, not neon. */
+  --color-signal-warn: #d3a260;
+  --color-signal-error: #d4796b;
+
+  --font-sans: var(--font-geist-sans), Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.15rem;
+
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --line-accent: rgba(91, 155, 213, 0.34);
+  color-scheme: dark;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    border-color: var(--line);
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-ink-950);
+    color: var(--color-chalk);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(255, 255, 255, 0.22);
+    color: #000000;
+  }
+
+  /* Restrained, technical scrollbar. */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-750);
+    border: 3px solid var(--color-ink-950);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-700);
+  }
+
+  :focus-visible {
+    outline: 1px solid #ffffff;
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@utility hairline {
+  border-width: 1px;
+  border-color: var(--line);
+}
+
+@utility hairline-strong {
+  border-width: 1px;
+  border-color: var(--line-strong);
+}
+
+/* Uppercase micro-labels used throughout the app chrome. */
+@utility label-micro {
+  font-size: 0.625rem;
+  line-height: 1rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--color-chalk-faint);
+}
+
+/* Blueprint grid behind app panels — structural, not decorative noise. */
+@utility grid-fade {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 75%);
+}
+
+@keyframes folester-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes folester-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes folester-trace {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Glitch decode — the two offset ghosts that ride a line while it resolves.
+   Achromatic, so the displacement reads as scan tearing rather than chromatic
+   aberration (which would reintroduce colour). */
+@keyframes folester-tear {
+  0% {
+    clip-path: inset(12% 0 72% 0);
+    transform: translate3d(-3px, 0, 0);
+  }
+  20% {
+    clip-path: inset(64% 0 18% 0);
+    transform: translate3d(2px, 0, 0);
+  }
+  40% {
+    clip-path: inset(38% 0 44% 0);
+    transform: translate3d(-2px, 0, 0);
+  }
+  60% {
+    clip-path: inset(80% 0 6% 0);
+    transform: translate3d(3px, 0, 0);
+  }
+  80% {
+    clip-path: inset(24% 0 58% 0);
+    transform: translate3d(-1px, 0, 0);
+  }
+  100% {
+    clip-path: inset(48% 0 34% 0);
+    transform: translate3d(1px, 0, 0);
+  }
+}
+
+@utility animate-pulse-dot {
+  animation: folester-pulse 2.4s var(--ease-out-quint) infinite;
+}
+
+@utility animate-rise {
+  animation: folester-rise 0.5s var(--ease-out-quint) both;
+}
+
+/* Applied to the ghost layers of a decoding line; removed once it resolves. */
+@utility glitch-tear {
+  animation: folester-tear 0.42s steps(2, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
